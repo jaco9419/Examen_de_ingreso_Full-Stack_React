@@ -1,35 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { ChangeEvent, useState } from "react";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const constants = {
+  SELECT_ALL: "Select All",
+};
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface ICountry {
+  name: string;
+  checked: boolean;
 }
 
-export default App
+const countriesInitialState: ICountry[] = [
+  {
+    name: "India",
+    checked: false,
+  },
+  {
+    name: "USA",
+    checked: false,
+  },
+  {
+    name: "France",
+    checked: false,
+  },
+];
+
+function App() {
+  const [countries, setCountries] = useState<ICountry[]>(countriesInitialState);
+  const [areAllCountriesChecked, setAreAllCountriesChecked] = useState<boolean>(false);
+
+  const handleCountriesCheckboxOnChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const updatedCountriesState = getUpdatedCountriesState(event.target);
+    setCountries(updatedCountriesState);
+    updateSelectAllCheckbox(updatedCountriesState);
+  };
+
+  const getUpdatedCountriesState = ({ value, checked }: HTMLInputElement) => {
+    const countriesStateToUpdate = [...countries];
+
+    return countriesStateToUpdate.map((country: ICountry): ICountry => {
+      if (value === constants.SELECT_ALL || value === country.name) {
+        return { ...country, checked };
+      }
+
+      return country;
+    });
+  };
+
+  const updateSelectAllCheckbox = (updateCountries: ICountry[]): void => {
+    setAreAllCountriesChecked(
+      updateCountries.every((country: ICountry): boolean => country.checked)
+    );
+  };
+
+  return (
+    <div className="countries-checkbox-container">
+      <div>
+        <input
+          key={"select-all"}
+          type={"checkbox"}
+          id={"checkbox-select-all"}
+          name={"checkbox-select-all"}
+          value={constants.SELECT_ALL}
+          checked={areAllCountriesChecked}
+          onChange={handleCountriesCheckboxOnChange}
+        />
+        <label htmlFor={"checkbox-select-all"}>Select All</label>
+      </div>
+
+      {countries.map((country) => {
+        return (
+          <div>
+            <input
+              key={country.name}
+              type="checkbox"
+              id={`checkbox-${country.name}`}
+              name={`checkbox-${country.name}`}
+              value={country.name}
+              checked={country.checked}
+              onChange={handleCountriesCheckboxOnChange}
+            />
+            <label htmlFor={`checkbox-${country.name}`}>{country.name}</label>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default App;
